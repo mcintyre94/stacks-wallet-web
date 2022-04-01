@@ -19,4 +19,5 @@ export enum RouteUrls {
   ViewSecretKey = '/view-secret-key',
   // Locked wallet route
   Unlock = '/unlock',
+  SignatureRequest = '/signature',
 }

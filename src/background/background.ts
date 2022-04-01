@@ -71,6 +71,25 @@ chrome.runtime.onConnect.addListener(port =>
             }
             break;
           }
+          case ExternalMethods.signatureRequest: {
+            void storePayload({
+              payload,
+              storageKey: StorageKey.signatureRequests,
+              port,
+            });
+            const path = RouteUrls.SignatureRequest;
+            const urlParams = new URLSearchParams();
+            urlParams.set('request', payload);
+            if (port.sender?.tab?.id) {
+              urlParams.set('tabId', port.sender.tab.id.toString());
+            }
+            if (IS_TEST_ENV) {
+              await openRequestInFullPage(path, urlParams);
+            } else {
+              popupCenter({ url: `/popup-center.html#${path}?${urlParams.toString()}` });
+            }
+            break;
+          }
           case ExternalMethods.transactionRequest: {
             void storePayload({
               payload,
