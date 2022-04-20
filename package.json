@@ -166,7 +166,6 @@
     "@babel/preset-typescript": "7.16.5",
     "@babel/runtime": "7.16.5",
     "@pmmmwh/react-refresh-webpack-plugin": "0.5.4",
-    "@redux-devtools/cli": "1.0.5",
     "@schemastore/web-manifest": "0.0.5",
     "@stacks/auth": "3.0.0",
     "@stacks/connect-react": "13.0.3",
