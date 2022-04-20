@@ -165,6 +165,7 @@
     "@babel/preset-react": "7.16.5",
     "@babel/preset-typescript": "7.16.5",
     "@babel/runtime": "7.16.5",
+    "@emotion/cache": "^11.7.1",
     "@pmmmwh/react-refresh-webpack-plugin": "0.5.4",
     "@schemastore/web-manifest": "0.0.5",
     "@stacks/auth": "4.0.0",
