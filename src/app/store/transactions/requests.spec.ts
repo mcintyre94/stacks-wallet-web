@@ -1,3 +1,6 @@
+/** @jest-environment node */
+import '@tests/node-jsdom-setup';
+
 import { renderHook } from '@testing-library/react-hooks';
 import { useAtomValue } from 'jotai/utils';
 import { mockLocalStorage, ProviderWithWalletAndRequestToken } from '@tests/state-utils';

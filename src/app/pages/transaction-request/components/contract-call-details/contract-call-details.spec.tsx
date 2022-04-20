@@ -1,3 +1,6 @@
+/** @jest-environment node */
+import '@tests/node-jsdom-setup';
+
 import { truncateMiddle } from '@stacks/ui-utils';
 import { cvToString, deserializeCV } from '@stacks/transactions';
 
@@ -5,6 +8,7 @@ import { render, waitFor } from '@testing-library/react';
 import { ProviderWithWalletAndRequestToken } from '@tests/state-utils';
 import { HEYSTACK_HEY_TX_REQUEST_DECODED } from '@tests/mocks';
 import { setupHeystackEnv } from '@tests/mocks/heystack';
+import StaticEmotionCacheProvider from '@tests/utils/static-emotion-cache-provider';
 import { hexToBuff } from '@app/common/utils';
 
 import { ContractCallDetails } from './contract-call-details';
@@ -23,9 +27,11 @@ describe('<ContractCallDetails />', () => {
   setupHeystackEnv();
   it('correctly displays the contract address and function name', async () => {
     const { getByText } = render(
-      <ProviderWithWalletAndRequestToken>
-        <ContractCallDetails />
-      </ProviderWithWalletAndRequestToken>
+      <StaticEmotionCacheProvider>
+        <ProviderWithWalletAndRequestToken>
+          <ContractCallDetails />
+        </ProviderWithWalletAndRequestToken>
+      </StaticEmotionCacheProvider>
     );
     await waitFor(() => {
       getByText(HEYSTACK_HEY_TX_REQUEST_DECODED.functionName);
@@ -35,9 +41,11 @@ describe('<ContractCallDetails />', () => {
 
   it('correctly displays the function arguments (message and giphy url)', async () => {
     const { getByText } = render(
-      <ProviderWithWalletAndRequestToken>
-        <ContractCallDetails />
-      </ProviderWithWalletAndRequestToken>
+      <StaticEmotionCacheProvider>
+        <ProviderWithWalletAndRequestToken>
+          <ContractCallDetails />
+        </ProviderWithWalletAndRequestToken>
+      </StaticEmotionCacheProvider>
     );
     await waitFor(() => {
       getByText(message);
