@@ -1,6 +1,3 @@
-/** @jest-environment node */
-import '@tests/node-jsdom-setup';
-
 import { AssetWithMeta, NftMeta } from '@app/common/asset-types';
 import { mergeAssetBalances, mergeNftBalances, NftMetaRecord } from '@app/store/assets/tokens';
 import BigNumber from 'bignumber.js';

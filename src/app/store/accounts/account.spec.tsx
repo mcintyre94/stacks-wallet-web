@@ -1,6 +1,3 @@
-/** @jest-environment node */
-import '@tests/node-jsdom-setup';
-
 import { act, renderHook } from '@testing-library/react-hooks';
 import { TEST_ACCOUNTS_WITH_ADDRESS } from '@tests/mocks';
 import { useAtomValue } from 'jotai/utils';

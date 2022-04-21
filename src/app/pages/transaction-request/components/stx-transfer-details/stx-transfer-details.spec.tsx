@@ -1,6 +1,3 @@
-/** @jest-environment node */
-import '@tests/node-jsdom-setup';
-
 import { render, waitFor } from '@testing-library/react';
 
 import { ProviderWithWalletAndStxTransferRequestToken } from '@tests/state-utils';

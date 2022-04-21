@@ -1,6 +1,3 @@
-/** @jest-environment node */
-import '@tests/node-jsdom-setup';
-
 import { correctNextNonce } from '@app/common/hooks/account/use-next-tx-nonce';
 import { AddressNonces } from '@stacks/blockchain-api-client/lib/generated';
 

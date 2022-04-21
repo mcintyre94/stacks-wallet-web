@@ -1,6 +1,3 @@
-/** @jest-environment node */
-import '@tests/node-jsdom-setup';
-
 import { useGetContractInterface } from '@app/query/contract/contract.query';
 import { TransactionPayload } from '@stacks/connect';
 import { renderHook } from '@testing-library/react-hooks';

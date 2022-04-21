@@ -1,6 +1,3 @@
-/** @jest-environment node */
-import '@tests/node-jsdom-setup';
-
 import { truncateMiddle } from '@stacks/ui-utils';
 import { cvToString, deserializeCV } from '@stacks/transactions';
 

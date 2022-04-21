@@ -1,6 +1,3 @@
-/** @jest-environment node */
-import '@tests/node-jsdom-setup';
-
 import { useGetFeeEstimations } from '@app/query/fees/fees.query';
 import { renderHook } from '@testing-library/react-hooks';
 import { setupHeystackEnv } from '@tests/mocks/heystack';
