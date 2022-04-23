@@ -7,7 +7,7 @@ import { FeeRow } from '@app/components/fee-row/fee-row';
 import { MinimalErrorMessage } from '@app/pages/transaction-request/components/minimal-error-message';
 import { useFeeEstimationsQuery } from '@app/query/fees/fees.hooks';
 import {
-  useUnsignedTxForSettingsState,
+  useUnsignedTransaction,
   useEstimatedUnsignedTransactionByteLengthState,
   useUnserializedSignedTransactionPayloadState,
 } from '@app/store/transactions/transaction.hooks';
@@ -24,14 +24,14 @@ import {
 
 export function FeeForm(): JSX.Element | null {
   const analytics = useAnalytics();
-  const { setFieldValue } = useFormikContext<TransactionFormValues>();
+  const { setFieldValue, values } = useFormikContext<TransactionFormValues>();
   const serializedUnsignedTransactionPayloadState = useUnserializedSignedTransactionPayloadState();
   const estimatedUnsignedTxByteLength = useEstimatedUnsignedTransactionByteLengthState();
   const { data: feeEstimationsResp, isError } = useFeeEstimationsQuery(
     serializedUnsignedTransactionPayloadState,
     estimatedUnsignedTxByteLength
   );
-  const transaction = useUnsignedTxForSettingsState();
+  const transaction = useUnsignedTransaction(values);
 
   const isSponsored = transaction ? isTxSponsored(transaction) : false;
 

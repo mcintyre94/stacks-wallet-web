@@ -1,7 +1,8 @@
+import { useMemo } from 'react';
+import { useAsync } from 'react-async-hook';
 import { atom } from 'jotai';
 import { useAtomValue, waitForAll } from 'jotai/utils';
 import { STXTransferPayload, TransactionTypes } from '@stacks/connect';
-import { useAsync } from 'react-async-hook';
 import {
   bufferCVFromString,
   ClarityValue,
@@ -28,13 +29,8 @@ import {
   generateUnsignedTransaction,
   GenerateUnsignedTransactionOptions,
 } from '@app/common/transactions/generate-unsigned-txs';
-import { useMakeFungibleTokenTransfer } from './fungible-token-transfer';
-import { useSelectedAssetItem } from '../assets/asset.hooks';
 
-// This is the form state so can likely be removed from global store when we
-// refactor transaction signing. Leaving for now to avoid conflicts but deprecating.
-/** @deprecated */
-export const localStacksTransactionInputsState = atom<TransactionFormValues | null>(null);
+import { useSelectedAssetItem } from '../assets/asset.hooks';
 
 const stxTokenTransferAtomDeps = atom(get =>
   get(
@@ -46,8 +42,7 @@ const stxTokenTransferAtomDeps = atom(get =>
   )
 );
 
-export function useStxTokenTransferUnsignedTxState() {
-  const txData = useAtomValue(localStacksTransactionInputsState);
+export function useStxTokenTransferUnsignedTxState(values: TransactionFormValues) {
   const address = useAtomValue(currentAccountStxAddressState);
   const customNonce = useAtomValue(customNonceState);
   const { network, account, nonce } = useAtomValue(stxTokenTransferAtomDeps);
@@ -59,13 +54,13 @@ export function useStxTokenTransferUnsignedTxState() {
     const options: GenerateUnsignedTransactionOptions = {
       publicKey: publicKeyToString(pubKeyfromPrivKey(account.stxPrivateKey)),
       nonce: txNonce,
-      fee: stxToMicroStx(txData?.fee || 0).toNumber(),
+      fee: stxToMicroStx(values?.fee || 0).toNumber(),
       txData: {
         txType: TransactionTypes.STXTransfer,
         // Using account address here as a fallback for a fee estimation
-        recipient: txData?.recipient || account.address,
-        amount: txData?.amount ? stxToMicroStx(txData.amount).toString(10) : '0',
-        memo: txData?.memo || undefined,
+        recipient: values?.recipient || account.address,
+        amount: values?.amount ? stxToMicroStx(values.amount).toString(10) : '0',
+        memo: values?.memo || undefined,
         network,
         // Coercing type here as we don't have the public key
         // as expected by STXTransferPayload type.
@@ -74,11 +69,10 @@ export function useStxTokenTransferUnsignedTxState() {
       } as STXTransferPayload,
     };
     return generateUnsignedTransaction(options);
-  }, [txData, address, customNonce, network, account, nonce]).result;
+  }, [values, address, customNonce, network, account, nonce]).result;
 }
 
-export function useFtTokenTransferUnsignedTx() {
-  const txData = useAtomValue(localStacksTransactionInputsState);
+export function useFtTokenTransferUnsignedTx(values: TransactionFormValues) {
   const address = useAtomValue(currentAccountStxAddressState);
   const customNonce = useAtomValue(customNonceState);
 
@@ -98,8 +92,8 @@ export function useFtTokenTransferUnsignedTx() {
 
     const realAmount =
       selectedAsset.type === 'ft'
-        ? ftUnshiftDecimals(txData?.amount || 0, selectedAsset?.meta?.decimals || 0)
-        : txData?.amount || 0;
+        ? ftUnshiftDecimals(values?.amount || 0, selectedAsset?.meta?.decimals || 0)
+        : values?.amount || 0;
 
     const postConditionOptions = {
       contractAddress,
@@ -116,13 +110,13 @@ export function useFtTokenTransferUnsignedTx() {
       uintCV(realAmount),
       standardPrincipalCVFromAddress(createAddress(stxAddress)),
       standardPrincipalCVFromAddress(
-        txData ? createAddress(txData?.recipient || '') : createEmptyAddress()
+        values ? createAddress(values?.recipient || '') : createEmptyAddress()
       ),
     ];
 
     if (selectedAsset.hasMemo) {
       functionArgs.push(
-        txData?.memo !== '' ? someCV(bufferCVFromString(txData?.memo || '')) : noneCV()
+        values?.memo !== '' ? someCV(bufferCVFromString(values?.memo || '')) : noneCV()
       );
     }
 
@@ -138,11 +132,36 @@ export function useFtTokenTransferUnsignedTx() {
         network,
         publicKey: publicKeyToString(pubKeyfromPrivKey(account.stxPrivateKey)),
       },
-      fee: stxToMicroStx(txData?.fee || 0).toNumber(),
+      fee: stxToMicroStx(values?.fee || 0).toNumber(),
       publicKey: publicKeyToString(pubKeyfromPrivKey(account.stxPrivateKey)),
       nonce: txNonce,
     } as const;
 
     return generateUnsignedTransaction(options);
-  }, [txData, address, customNonce, account, assetTransferState, selectedAsset]).result;
+  }, [values, address, customNonce, account, assetTransferState, selectedAsset]).result;
+}
+
+export function useMakeFungibleTokenTransfer() {
+  const asset = useSelectedAssetItem();
+  const currentAccount = useAtomValue(currentAccountState);
+  const network = useAtomValue(currentStacksNetworkState);
+  const stxAddress = useAtomValue(currentAccountStxAddressState);
+  const nonce = useAtomValue(currentAccountNonceState);
+  return useMemo(() => {
+    if (!stxAddress || typeof nonce === 'undefined') return;
+
+    if (asset && currentAccount && stxAddress) {
+      const { contractName, contractAddress, name: assetName } = asset;
+      return {
+        asset,
+        stxAddress,
+        nonce,
+        network,
+        assetName,
+        contractAddress,
+        contractName,
+      };
+    }
+    return;
+  }, [asset, currentAccount, network, nonce, stxAddress]);
 }

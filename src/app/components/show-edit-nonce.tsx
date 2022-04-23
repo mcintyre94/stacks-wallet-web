@@ -1,3 +1,4 @@
+import { useFormikContext } from 'formik';
 import { color } from '@stacks/ui';
 
 import { useCurrentNetwork } from '@app/common/hooks/use-current-network';
@@ -6,13 +7,15 @@ import { SpaceBetween } from '@app/components/space-between';
 import { Caption } from '@app/components/typography';
 import {
   useTxByteSizeState,
-  useUnsignedTxForSettingsState,
+  useUnsignedTransaction,
 } from '@app/store/transactions/transaction.hooks';
+import { TransactionFormValues } from '@app/common/transactions/transaction-utils';
 
 export function ShowEditNonceAction(): JSX.Element {
+  const { values } = useFormikContext<TransactionFormValues>();
   const { isTestnet, name } = useCurrentNetwork();
   const { showEditNonce, setShowEditNonce } = useDrawers();
-  const tx = useUnsignedTxForSettingsState();
+  const tx = useUnsignedTransaction(values);
   const [, setTxBytes] = useTxByteSizeState();
 
   return (

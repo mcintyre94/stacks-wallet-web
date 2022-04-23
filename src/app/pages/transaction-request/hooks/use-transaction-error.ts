@@ -14,12 +14,9 @@ import {
   useTransactionRequestValidation,
 } from '@app/store/transactions/requests.hooks';
 
-import { useUnsignedTransactionFee } from './use-signed-transaction-fee';
-
 export function useTransactionError() {
   const transactionRequest = useTransactionRequestState();
   const contractInterface = useContractInterface(transactionRequest);
-  const fee = useUnsignedTransactionFee();
   const broadcastError = useTransactionBroadcastError();
   const isValidTransaction = useTransactionRequestValidation();
   const origin = useOrigin();
@@ -54,16 +51,17 @@ export function useTransactionError() {
           return TransactionErrorReason.StxTransferInsufficientFunds;
       }
 
-      if (zeroBalance && !fee.isSponsored) return TransactionErrorReason.FeeInsufficientFunds;
+      if (!transactionRequest.sponsored) {
+        if (zeroBalance) return TransactionErrorReason.FeeInsufficientFunds;
 
-      if (fee && !fee.isSponsored && fee.value) {
-        const feeValue = microStxToStx(fee.value);
-        if (feeValue.gte(availableStxBalance)) return TransactionErrorReason.FeeInsufficientFunds;
+        if (transactionRequest.fee) {
+          const feeValue = microStxToStx(transactionRequest.fee);
+          if (feeValue.gte(availableStxBalance)) return TransactionErrorReason.FeeInsufficientFunds;
+        }
       }
     }
     return;
   }, [
-    fee,
     broadcastError,
     contractInterface,
     availableStxBalance,

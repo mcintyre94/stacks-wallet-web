@@ -15,17 +15,14 @@ import { useSelectedAsset } from '@app/pages/send-tokens/hooks/use-selected-asse
 import { useSendFormValidation } from '@app/pages/send-tokens/hooks/use-send-form-validation';
 import { RouteUrls } from '@shared/route-urls';
 import { useFeeEstimationsState } from '@app/store/transactions/fees.hooks';
-import {
-  useLocalTransactionInputsState,
-  useSendFormUnsignedTxState,
-  useSignTransactionSoftwareWallet,
-} from '@app/store/transactions/transaction.hooks';
+import { useSignTransactionSoftwareWallet } from '@app/store/transactions/transaction.hooks';
 
 import { SendTokensConfirmDrawer } from './components/send-tokens-confirm-drawer/send-tokens-confirm-drawer';
 import { SendFormInner } from './components/send-form-inner';
 import { useResetNonceCallback } from './hooks/use-reset-nonce-callback';
 import { useAnalytics } from '@app/common/hooks/analytics/use-analytics';
 import { Estimations } from '@shared/models/fees-types';
+import { StacksTransaction } from '@stacks/transactions';
 
 function SendTokensFormBase() {
   const navigate = useNavigate();
@@ -35,10 +32,8 @@ function SendTokensFormBase() {
   const { setActiveTabActivity } = useHomeTabs();
   const { selectedAsset } = useSelectedAsset();
   const sendFormSchema = useSendFormValidation({ setAssetError });
-  const [_txData, setTxData] = useLocalTransactionInputsState();
   const resetNonceCallback = useResetNonceCallback();
   const [_, setFeeEstimations] = useFeeEstimationsState();
-  const transaction = useSendFormUnsignedTxState();
   const signSoftwareWalletTx = useSignTransactionSoftwareWallet();
   const analytics = useAnalytics();
 
@@ -46,45 +41,46 @@ function SendTokensFormBase() {
 
   const handleConfirmDrawerOnClose = useCallback(() => {
     setShowing(false);
-    setTxData(null);
     resetNonceCallback();
     void setActiveTabActivity();
-  }, [resetNonceCallback, setActiveTabActivity, setTxData]);
+  }, [resetNonceCallback, setActiveTabActivity]);
 
   const broadcastTransactionFn = useHandleSubmitTransaction({
     loadingKey: LoadingKeys.CONFIRM_DRAWER,
   });
 
-  const broadcastTransactionAction = useCallback(async () => {
-    if (!transaction) {
-      logger.error('Cannot broadcast transaction, no tx in state');
-      toast.error('Unable to broadcast transaction');
-      return;
-    }
+  const broadcastTransactionAction = useCallback(
+    async (transaction: StacksTransaction | undefined) => {
+      if (!transaction) {
+        logger.error('Cannot broadcast transaction, no tx in state');
+        toast.error('Unable to broadcast transaction');
+        return;
+      }
 
-    const signedTx = signSoftwareWalletTx(transaction);
-    if (!signedTx) {
-      logger.error('Cannot sign transaction, no account in state');
-      toast.error('Unable to broadcast transaction');
-      return;
-    }
+      const signedTx = signSoftwareWalletTx(transaction);
+      if (!signedTx) {
+        logger.error('Cannot sign transaction, no account in state');
+        toast.error('Unable to broadcast transaction');
+        return;
+      }
 
-    await broadcastTransactionFn({
-      transaction: signedTx,
-      onClose() {
-        handleConfirmDrawerOnClose();
-        navigate(RouteUrls.Home);
-      },
-    });
-    setFeeEstimations([]);
-  }, [
-    broadcastTransactionFn,
-    handleConfirmDrawerOnClose,
-    navigate,
-    setFeeEstimations,
-    signSoftwareWalletTx,
-    transaction,
-  ]);
+      await broadcastTransactionFn({
+        transaction: signedTx,
+        onClose() {
+          handleConfirmDrawerOnClose();
+          navigate(RouteUrls.Home);
+        },
+      });
+      setFeeEstimations([]);
+    },
+    [
+      broadcastTransactionFn,
+      handleConfirmDrawerOnClose,
+      navigate,
+      setFeeEstimations,
+      signSoftwareWalletTx,
+    ]
+  );
 
   const initialValues = {
     amount: '',
@@ -101,14 +97,8 @@ function SendTokensFormBase() {
       validateOnBlur={false}
       validateOnMount={false}
       validationSchema={sendFormSchema}
-      onSubmit={values => {
+      onSubmit={() => {
         if (selectedAsset && !assetError) {
-          setTxData({
-            amount: values.amount,
-            fee: values.fee,
-            memo: values.memo,
-            recipient: values.recipient,
-          });
           setShowing(true);
         }
       }}
@@ -121,8 +111,10 @@ function SendTokensFormBase() {
           <SendTokensConfirmDrawer
             isShowing={isShowing && !showEditNonce}
             onClose={() => handleConfirmDrawerOnClose()}
-            onUserSelectBroadcastTransaction={async () => {
-              await broadcastTransactionAction();
+            onUserSelectBroadcastTransaction={async (
+              transaction: StacksTransaction | undefined
+            ) => {
+              await broadcastTransactionAction(transaction);
               void analytics.track('submit_fee_for_transaction', {
                 type: props.values.feeType,
                 fee: props.values.fee,

@@ -21,6 +21,7 @@ export interface TransactionFormValues {
   fee: number | string;
   recipient: string;
   memo: string;
+  nonce: number;
 }
 
 export interface StxTransfer {

@@ -4,14 +4,15 @@ import { Button, Stack } from '@stacks/ui';
 
 import { LoadingKeys, useLoading } from '@app/common/hooks/use-loading';
 import { useDrawers } from '@app/common/hooks/use-drawers';
-import { useUnsignedTxForSettingsState } from '@app/store/transactions/transaction.hooks';
+import { useUnsignedTransaction } from '@app/store/transactions/transaction.hooks';
 
 import { EditNonceField } from './edit-nonce-field';
+import { TransactionFormValues } from '@app/common/transactions/transaction-utils';
 
 export function EditNonceFormInner(): JSX.Element {
-  const { setFieldValue, handleSubmit } = useFormikContext();
+  const { setFieldValue, handleSubmit, values } = useFormikContext<TransactionFormValues>();
   const { isLoading } = useLoading(LoadingKeys.EDIT_NONCE_DRAWER);
-  const transaction = useUnsignedTxForSettingsState();
+  const transaction = useUnsignedTransaction(values);
   const nonce = Number(transaction?.auth.spendingCondition?.nonce);
   const { setShowEditNonce } = useDrawers();
 

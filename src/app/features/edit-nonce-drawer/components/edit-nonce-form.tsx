@@ -1,19 +1,21 @@
 import { Suspense, useEffect, useState } from 'react';
-import { Formik } from 'formik';
+import { Formik, useFormikContext } from 'formik';
 import * as yup from 'yup';
 import { Button, Stack } from '@stacks/ui';
 
 import { LoadingKeys, useLoading } from '@app/common/hooks/use-loading';
 import { nonceSchema } from '@app/common/validation/nonce-schema';
 import { useCustomNonce } from '@app/store/transactions/nonce.hooks';
-import { useUnsignedTxForSettingsState } from '@app/store/transactions/transaction.hooks';
+import { useUnsignedTransaction } from '@app/store/transactions/transaction.hooks';
+import { TransactionFormValues } from '@app/common/transactions/transaction-utils';
 
 import { EditNonceFormInner } from './edit-nonce-form-inner';
 import { EditNonceField } from './edit-nonce-field';
 
 // Not sure what this is doing?
 const SuspenseOnMount = ({ onMountCallback, isEnabled }: any) => {
-  const tx = useUnsignedTxForSettingsState();
+  const { values } = useFormikContext<TransactionFormValues>();
+  const tx = useUnsignedTransaction(values);
 
   useEffect(() => {
     if (tx && isEnabled) {
@@ -27,7 +29,6 @@ const SuspenseOnMount = ({ onMountCallback, isEnabled }: any) => {
 interface FormProps {
   onClose: () => void;
 }
-
 export function EditNonceForm(props: FormProps): JSX.Element {
   const { onClose } = props;
   const [, setCustomNonce] = useCustomNonce();
